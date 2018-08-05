@@ -3,6 +3,7 @@ namespace: prom-system
 resources:
   - metadata.yml
   - node_exporter.yml
+  - snmp_exporter.yml
   - cadvisor.yml
   - prometheus.yml
   - grafana.yml
