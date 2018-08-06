@@ -20,6 +20,13 @@ spec:
           ports:
             - protocol: TCP
               containerPort: 9116
+          volumeMounts:
+            - name: config
+              mountPath: /etc/snmp_exporter
+      volumes:
+        - name: config
+          configMap:
+            name: snmp
 ---
 apiVersion: v1
 kind: Service
