@@ -5,6 +5,8 @@ metadata:
   name: snmp-exporter
   namespace: prom-system
 spec:
+  replicas: 1
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: snmp-exporter

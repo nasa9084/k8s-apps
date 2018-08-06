@@ -19,6 +19,7 @@ metadata:
   namespace: prom-system
 spec:
   replicas: 1
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: grafana

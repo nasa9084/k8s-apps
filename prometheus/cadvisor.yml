@@ -5,6 +5,7 @@ metadata:
   name: cadvisor
   namespace: prom-system
 spec:
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: cadvisor

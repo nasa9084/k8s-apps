@@ -5,6 +5,7 @@ metadata:
   name: node-exporter
   namespace: prom-system
 spec:
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: node-exporter
