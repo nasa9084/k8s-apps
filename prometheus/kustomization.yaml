@@ -11,6 +11,10 @@ configMapGenerator:
   - name: prometheus
     files:
       - config/prometheus.yml
+      - config/alert.rules
   - name: snmp
     files:
       - config/snmp.yml
+  - name: alertmanager
+    files:
+      - config/alertmanager.yml

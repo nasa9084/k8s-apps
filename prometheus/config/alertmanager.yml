@@ -1,0 +1,8 @@
+global:
+  slack_api_url: SLACK_API_URL
+route:
+  receiver: charakoba.com slack
+receivers:
+  - name: charakoba.com slack
+    slack_configs:
+      - channel: '#emergency'

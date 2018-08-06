@@ -12,6 +12,19 @@ spec:
     requests:
       storage: 5Gi
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: alertmanager-pvc
+  namespace: prom-system
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: default
+  resources:
+    requests:
+      storage: 5Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -41,7 +54,7 @@ spec:
           securityContext:
             runAsUser: 0
           volumeMounts:
-            - name: config
+            - name: prometheus-config
               mountPath: /etc/prometheus
             - name: prometheus-persistent-storage
               mountPath: /prometheus-data
@@ -53,13 +66,38 @@ spec:
             httpGet:
               port: 9090
               path: /-/ready
+        - name: alertmanager
+          image: prom/alertmanager:v0.15.1
+          ports:
+            - protocol: TCP
+              containerPort: 9093
+          args: ["--config.file=/etc/alertmanager/alertmanager.yml", "--storage.path=/alertmanager-data"]
+          volumeMounts:
+            - name: alertmanager-config
+              mountPath: /etc/alertmanager
+            - name: alertmanager-persistent-storage
+              mountPath: /alertmanager-data
+          livenessProbe:
+            httpGet:
+              port: 9093
+              path: /-/healthy
+          readinessProbe:
+            httpGet:
+              port: 9093
+              path: /-/ready
       volumes:
-        - name: config
+        - name: prometheus-config
           configMap:
             name: prometheus
         - name: prometheus-persistent-storage
           persistentVolumeClaim:
             claimName: prometheus-pvc
+        - name: alertmanager-config
+          configMap:
+            name: alertmanager
+        - name: alertmanager-persistent-storage
+          persistentVolumeClaim:
+            claimName: alertmanager-pvc
 ---
 apiVersion: v1
 kind: Service
