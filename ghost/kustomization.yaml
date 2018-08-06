@@ -1,0 +1,9 @@
+---
+namespace: ghost
+resources:
+  - metadata.yml
+  - ghost.yml
+configMapGenerator:
+  - name: ghost
+    files:
+      - config/config.production.json
