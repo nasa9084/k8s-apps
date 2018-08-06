@@ -45,6 +45,14 @@ spec:
               mountPath: /etc/prometheus
             - name: prometheus-persistent-storage
               mountPath: /prometheus-data
+          livenessProbe:
+            httpGet:
+              port: 9090
+              path: /-/healthy
+          readinessProbe:
+            httpGet:
+              port: 9090
+              path: /-/ready
       volumes:
         - name: config
           configMap:
