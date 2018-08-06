@@ -1,8 +1,0 @@
-groups:
-  - name: baremetals
-    rules:
-      - alert: MemUsageTooHigh
-        expr: (avg_over_time(node_memory_MemTotal_bytes[5m]) - avg_over_time(node_memory_MemAvailable_bytes[5m])) / avg_over_time(node_memory_MemTotal_bytes[5m]) > 75
-        for: 30m
-        annotations:
-          description: 'memory usage on {{ $labels.instance }} is too high (current: {{ $value }})'
