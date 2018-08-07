@@ -6,7 +6,7 @@ metadata:
   namespace: ghost
 spec:
   concurrencyPolicy: Replace
-  schedule: '0 0 * * *'
+  schedule: '0 0,12 * * *'
   jobTemplate:
     spec:
       backoffLimit: 3
