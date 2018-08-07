@@ -3,6 +3,7 @@ namespace: ghost
 resources:
   - metadata.yml
   - ghost.yml
+  - backup.yml
 configMapGenerator:
   - name: ghost
     files:
