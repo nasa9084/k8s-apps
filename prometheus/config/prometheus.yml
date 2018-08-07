@@ -70,8 +70,3 @@ scrape_configs:
       - targets:
           - 192.168.1.51:9189
 
-alerting:
-  alertmanagers:
-    - static_configs:
-        - targets:
-            - localhost:9093
