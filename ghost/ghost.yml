@@ -69,7 +69,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-    - host: ghost.web-apps.tech
+    - host: blog.web-apps.tech
       http:
         paths:
           - path: /
