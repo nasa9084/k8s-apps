@@ -36,8 +36,6 @@ spec:
               value: 'true'
             - name: GF_AUTH_ANONYMOUS_ENABLED
               value: 'false'
-            - name: GF_INSTALL_PLUGINS
-              value: 'camptocamp-prometheus-alertmanager-datasource'
           securityContext:
             runAsUser: 0
           volumeMounts:
