@@ -48,6 +48,16 @@ spec:
           persistentVolumeClaim:
             claimName: ghost-pvc
 ---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: ghost
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: ghost
+---
 apiVersion: v1
 kind: Service
 metadata:
