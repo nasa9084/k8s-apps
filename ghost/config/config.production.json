@@ -1,5 +1,5 @@
 {
-  "url": "https://ghost.web-apps.tech/",
+  "url": "https://blog.web-apps.tech/",
   "server": {
     "port": 2368,
     "host": "0.0.0.0"
