@@ -6,7 +6,6 @@ resources:
   - snmp_exporter.yml
   - cadvisor.yml
   - prometheus.yml
-  - grafana.yml
 configMapGenerator:
   - name: prometheus
     files:
