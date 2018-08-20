@@ -67,6 +67,23 @@ spec:
             httpGet:
               port: 9090
               path: /-/ready
+        - name: alertmanager
+          image: prom/alertmanager:v0.15.2
+          ports:
+            - protocol: TCP
+              containerPort: 9093
+          args: ["--config.file=/etc/alertmanager/alertmanager.yml", "--storage.path=/alertmanager-data"]
+          volumeMounts:
+            - name: alertmanager-config
+              mountPath: /etc/alertmanager
+          livenessProbe:
+            httpGet:
+              port: 9093
+              path: /-/healthy
+          readinessProbe:
+            httpGet:
+              port: 9093
+              path: /-/ready
         - name: grafana
           image: grafana/grafana:5.2.2
           env:
@@ -79,6 +96,24 @@ spec:
           volumeMounts:
             - name: grafana-persistent-storage
               mountPath: /var/lib/grafana
+      initContainers:
+        - name: init-alertmanager-config
+          image: nasa9084/confd:v0.16.0
+          imagePullPolicy: Always
+          args: ["-onetime", "-backend", "env"]
+          volumeMounts:
+            - name: alertmanager-config
+              mountPath: /etc/alertmanager
+            - name: alertmanager-config-template
+              mountPath: /etc/confd/templates
+            - name: alertmanager-confd-toml
+              mountPath: /etc/confd/conf.d
+          env:
+            - name: ALERTMANAGER_SLACK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: alertmanager-slack-url
+                  key: alertmanager_slack_url
       volumes:
         - name: prometheus-config
           configMap:
@@ -86,6 +121,14 @@ spec:
         - name: prometheus-persistent-storage
           persistentVolumeClaim:
             claimName: prometheus-pvc
+        - name: alertmanager-config-template
+          configMap:
+            name: alertmanager-config-template
+        - name: alertmanager-confd-toml
+          configMap:
+            name: alertmanager-confd-toml
+        - name: alertmanager-config
+          emptyDir: {}
         - name: grafana-persistent-storage
           persistentVolumeClaim:
             claimName: grafana-pvc

@@ -75,3 +75,12 @@ scrape_configs:
       - targets:
           - 192.168.1.54:9000
     metrics_path: /minio/prometheus/metrics
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - localhost:9093
+
+rule_files:
+  - /etc/prometheus/alert.rules
