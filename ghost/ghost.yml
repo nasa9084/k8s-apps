@@ -78,6 +78,9 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
 spec:
+  tls:
+    - hosts:
+        - blog.web-apps.tech
   rules:
     - host: blog.web-apps.tech
       http:
