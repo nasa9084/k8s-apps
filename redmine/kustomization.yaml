@@ -1,0 +1,4 @@
+---
+namespace: redmine
+resources:
+  - redmine.yml
