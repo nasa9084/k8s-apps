@@ -1,0 +1,37 @@
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: ClusterIssuer
+metadata:
+  name: web-apps.tech
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: nasa.9084.bassclarinet@gmail.com
+    privateKeySecretRef:
+      name: letsencrypt
+    dns01:
+      providers:
+        - name: cloudflare
+          cloudflare:
+            email: nasa.9084.bassclarinet@gmail.com
+            apiKeySecretRef:
+              name: cloudflare-api-key
+              key: api-key
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: wildcard.web-apps.tech
+spec:
+  secretName: wildcard.web-apps.tech
+  dnsNames:
+    - '*.web-apps.tech'
+  acme:
+    config:
+      - domains:
+          - '*.web-apps.tech'
+        dns01:
+          provider: cloudflare
+  issuerRef:
+    name: web-apps.tech
+    kind: ClusterIssuer
