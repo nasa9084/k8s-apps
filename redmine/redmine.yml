@@ -124,7 +124,9 @@ spec:
   tls:
     - hosts:
         - rm.web-apps.tech
+    - hosts:
         - rm.charakoba.com
+      secretName: rm.charakoba.com
   rules:
     - host: rm.web-apps.tech
       http:
