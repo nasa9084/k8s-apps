@@ -2,3 +2,4 @@
 namespace: redmine
 resources:
   - redmine.yml
+  - cert.yml

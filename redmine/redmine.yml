@@ -124,8 +124,16 @@ spec:
   tls:
     - hosts:
         - rm.web-apps.tech
+        - rm.charakoba.com
   rules:
     - host: rm.web-apps.tech
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: redmine
+              servicePort: 3000
+    - host: rm.charakoba.com
       http:
         paths:
           - path: /
