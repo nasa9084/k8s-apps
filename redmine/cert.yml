@@ -17,8 +17,7 @@ rules:
       - secrets
     verbs:
       - create
-      - patch
-      - replace
+      - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -51,7 +50,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: sync
-              image: nasa9084/sync-charakoba-cert:18.08.23
+              image: nasa9084/sync-charakoba-cert:18.08.24
               imagePullPolicy: Always
               env:
                 - name: MINIO_ACCESS_KEY
