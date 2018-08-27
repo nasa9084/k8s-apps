@@ -69,7 +69,7 @@ spec:
     spec:
       containers:
         - name: redmine
-          image: redmine:3.4.6
+          image: redmine:3.4.6-passenger
           ports:
             - protocol: TCP
               containerPort: 3000
@@ -84,7 +84,7 @@ spec:
             - name: REDMINE_DB_POSTGRES
               value: postgres
             - name: REDMINE_DB_USERNAME
-              value: postgres
+              value: redmine
             - name: REDMINE_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -135,6 +135,8 @@ spec:
             - name: pg-volume
               mountPath: /var/lib/postgresql/data/pgdata
           env:
+            - name: POSTGRES_USER
+              value: redmine
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
             - name: POSTGRES_PASSWORD
