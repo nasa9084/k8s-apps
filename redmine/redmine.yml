@@ -28,6 +28,19 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  name: redmine-themes-pvc
+  namespace: redmine
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: default
+  resources:
+    requests:
+      storage: 10Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
   name: redmine-postgresql-pvc
   namespace: redmine
 spec:
@@ -65,9 +78,13 @@ spec:
               mountPath: /usr/src/redmine/files
             - name: redmine-plugins-volume
               mountPath: /usr/src/redmine/plugins
+            - name: redmine-themes-volume
+              mountPath: /usr/src/redmine/public/themes
           env:
             - name: REDMINE_DB_POSTGRES
-              value: localhost
+              value: postgres
+            - name: REDMINE_DB_USERNAME
+              value: postgres
             - name: REDMINE_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -75,21 +92,13 @@ spec:
                   key: password
             - name: REDMINE_PLUGINS_MIGRATE
               value: 'true'
-        - name: postgresql
-          image: postgres:10.5
-          volumeMounts:
-            - name: pg-volume
-              mountPath: /var/lib/postgresql/data/pgdata
-          env:
-            - name: PGDATA
-              value: /var/lib/postgresql/data/pgdata
-            - name: POSTGRES_USER
-              value: redmine
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: redmine-postgres-password
-                  key: password
+          readinessProbe:
+            httpGet:
+              port: 3000
+              path: /login
+          resources:
+            requests:
+              memory: 2Gi
       volumes:
         - name: redmine-files-volume
           persistentVolumeClaim:
@@ -97,6 +106,46 @@ spec:
         - name: redmine-plugins-volume
           persistentVolumeClaim:
             claimName: redmine-plugins-pvc
+        - name: redmine-themes-volume
+          persistentVolumeClaim:
+            claimName: redmine-themes-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redmine-postgresql
+  namespace: redmine
+spec:
+  selector:
+    matchLabels:
+      app: redmine-postgres
+  replicas: 1
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        app: redmine-postgres
+    spec:
+      containers:
+        - name: postgresql
+          image: postgres:10.5
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: pg-volume
+              mountPath: /var/lib/postgresql/data/pgdata
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redmine-postgres-password
+                  key: password
+          resources:
+            requests:
+              memory: 2Gi
+      volumes:
         - name: pg-volume
           persistentVolumeClaim:
             claimName: redmine-postgresql-pvc
@@ -112,6 +161,18 @@ spec:
       targetPort: 3000
   selector:
     app: redmine
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: redmine
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: redmine-postgres
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
