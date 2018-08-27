@@ -6,7 +6,7 @@ groups:
         expr: sum(avg(irate(node_cpu_seconds_total{instance=~'192.168.1.3.:9100',mode!='idle'}[5m])) by (cpu,instance)) by (instance) * 100 > 75
         for: 5m
         labels:
-          instance: '{{ $labels.instance }}'
+          target: '{{ $labels.instance }}'
         annotations:
           summary: 'CPU usage of {{ $labels.instance }} is too high.'
           description: 'CPU usage of {{ $labels.instance }} is too high.'
@@ -14,7 +14,7 @@ groups:
         expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes{instance=~'192.168.1.3.:9100'} * 100 > 75
         for: 5m
         labels:
-          instance: '{{ $labels.instance }}'
+          target: '{{ $labels.instance }}'
         annotations:
           summary: 'Memory usage of {{ $labels.instance }} is too high.'
           description: 'Memory usage of {{ $labels.instance }} is too high (current: {{ $value }}).'
@@ -23,6 +23,8 @@ groups:
       - alert: InsideTempTooHigh
         expr: avg_over_time(picoCelsius[15m]) > 65
         for: 5m
+        labels:
+          target: 'IX2105'
         annotations:
           summery: 'Inside temperature of IX2105 is too high.'
           description: 'Inside temperature of IX2105 is too high (current: {{ $value }}).'
@@ -31,6 +33,8 @@ groups:
       - alert: LowDiskSpace
         expr: minio_disk_storage_used_bytes > 60 * 1024 * 1024 * 1024
         for: 5m
+        labels:
+          target: 'minio'
         annotations:
           summary: 'Over 60GB'
           description: 'Over 60GB'
@@ -45,6 +49,8 @@ groups:
       - alert: CPUUsageTooHigh
         expr: sum(avg(rate(node_cpu_seconds_total{mode!='idle',nodename=~'node.'}[5m])) without (cpu)) by (nodename) * 100 > 75
         for: 5m
+        labels:
+          target: '{{ $labels.nodename }}'
         annotations:
           summary: 'CPU usage of {{ $labels.nodename }} is too high.'
           description: 'CPU usage of {{ $labels.nodename }} is too high (current: {{ $value }}).'
@@ -53,6 +59,8 @@ groups:
       - alert: VolumeUsageTooHigh
         expr: (sum(gluster_node_size_total_bytes) by (volume) - sum(gluster_node_size_free_bytes) by (volume)) / sum(gluster_node_size_total_bytes) by (volume) * 100 > 75
         for: 5m
+        labels:
+          target: '{{ $labels.volume }}'
         annotations:
           summary: 'Volume usage of {{ $labels.volume }} is too high.'
           description: 'Volume usage of {{ $labels.volume }} is too high (current: {{ $value }}'
