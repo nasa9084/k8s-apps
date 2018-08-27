@@ -48,3 +48,11 @@ groups:
         annotations:
           summary: 'CPU usage of {{ $labels.nodename }} is too high.'
           description: 'CPU usage of {{ $labels.nodename }} is too high (current: {{ $value }}).'
+  - name: GlusterFS
+    rules:
+      - alert: VolumeUsageTooHigh
+        expr: (sum(gluster_node_size_total_bytes) by (volume) - sum(gluster_node_size_free_bytes) by (volume)) / sum(gluster_node_size_total_bytes) by (volume) * 100 > 75
+        for: 5m
+        annotations:
+          summary: 'Volume usage of {{ $labels.volume }} is too high.'
+          description: 'Volume usage of {{ $labels.volume }} is too high (current: {{ $value }}'
