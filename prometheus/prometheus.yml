@@ -51,7 +51,7 @@ spec:
           ports:
             - protocol: TCP
               containerPort: 9090
-          args: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus-data", "--storage.tsdb.no-lockfile"]
+          args: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus-data", "--storage.tsdb.no-lockfile", "--web.enable-admin-api"]
           securityContext:
             runAsUser: 0
           volumeMounts:
