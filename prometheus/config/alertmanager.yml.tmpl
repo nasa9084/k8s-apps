@@ -11,4 +11,7 @@ receivers:
         username: Alertmanager
         fields:
           - title: target
-            value: {{ .labels.instance }}
+            value: '{{ .Labels.instance }}'
+        text: '{{ .Annotations.description }}'
+        title: '{{ .Annotations.summary }}'
+        title_link: ''
