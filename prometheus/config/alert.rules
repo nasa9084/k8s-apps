@@ -57,7 +57,7 @@ groups:
   - name: GlusterFS
     rules:
       - alert: VolumeUsageTooHigh
-        expr: (sum(gluster_node_size_total_bytes) by (volume) - sum(gluster_node_size_free_bytes) by (volume)) / sum(gluster_node_size_total_bytes) by (volume) * 100 > 75
+        expr: (sum(gluster_node_size_total_bytes) by (volume) - sum(gluster_node_size_free_bytes) by (volume)) / sum(gluster_node_size_total_bytes) by (volume) * 100 > 85
         for: 5m
         labels:
           target: '{{ $labels.volume }}'
