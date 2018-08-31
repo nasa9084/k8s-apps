@@ -15,7 +15,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: backuper
-              image: nasa9084/backuper:18.08.07
+              image: nasa9084/backuper:18.08.31
               imagePullPolicy: Always
               volumeMounts:
                 - name: target-volume
