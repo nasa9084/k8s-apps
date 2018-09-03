@@ -76,6 +76,21 @@ scrape_configs:
           - 192.168.1.54:9000
     metrics_path: /minio/prometheus/metrics
 
+  - job_name: blackbox
+    static_configs:
+      - targets:
+          - https://blog.web-apps.tech
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 133.223.1.184:9115
+
 alerting:
   alertmanagers:
     - static_configs:
