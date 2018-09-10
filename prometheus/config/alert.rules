@@ -30,6 +30,14 @@ groups:
           description: 'Inside temperature of IX2105 is too high (current: {{ $value }}).'
   - name: minio
     rules:
+      - alert: MinioDown
+        expr: up{job='minio'} != 1
+        for: 5m
+        labels:
+          target: 'minio'
+        annotations:
+          summary: 'Minio Server is down'
+          description: 'Minio Server is down'
       - alert: LowDiskSpace
         expr: minio_disk_storage_used_bytes > 60 * 1024 * 1024 * 1024
         for: 5m
@@ -40,9 +48,19 @@ groups:
           description: 'Over 60GB'
   - name: KubernetesNodes
     rules:
+      - alert: NodeDown
+        expr: up{exporter='node-exporter'} != 1
+        for: 5m
+        labels:
+          target: '{{ $labels.nodename }}'
+        annotations:
+          summary: 'Node is down'
+          description: 'Node {{ $labels.nodename }} is down'
       - alert: MemoryUsageTooHigh
         expr: (node_memory_MemTotal_bytes{nodename=~'node.'} - node_memory_MemAvailable_bytes) / (node_memory_MemTotal_bytes) * 100 > 75
         for: 5m
+        labels:
+          target: '{{ $labels.nodename }}'
         annotations:
           summary: 'Memory usage of {{ $labels.nodename }} is too high.'
           description: 'Memory usage of {{ $labels.nodename }} is too high (current: {{ $value }}).'
@@ -56,6 +74,14 @@ groups:
           description: 'CPU usage of {{ $labels.nodename }} is too high (current: {{ $value }}).'
   - name: GlusterFS
     rules:
+      - alert: GlusterDown
+        expr: up{job='gluster'} != 1
+        for: 5m
+        labels:
+          target: 'gluster'
+        annotations:
+          summary: 'GlusterFS Server is down'
+          description: 'GlusterFS Server is down'
       - alert: VolumeUsageTooHigh
         expr: (sum(gluster_node_size_total_bytes) by (volume) - sum(gluster_node_size_free_bytes) by (volume)) / sum(gluster_node_size_total_bytes) by (volume) * 100 > 85
         for: 5m
