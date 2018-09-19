@@ -14,3 +14,12 @@ e.g.: `$ kustomize build` for checking and deploy with `$ kustomize build | kube
 * `alertmanager-slack-url`
   * key: `alertmanager_slack_url`
   * value: slack incoming webhook url to use alerting
+* `growi-password-seed`
+  * key: `seed`
+  * value: any string
+* `hackmd-db-password`
+  * key: `postgres-password`
+  * value: password for postgresql
+* `redmine-postgres-password`
+  * key: `password`
+  * value: password for postgresql
