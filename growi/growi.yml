@@ -12,6 +12,58 @@ spec:
     requests:
       storage: 3Gi
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: growi-mongodb-configdb
+  namespace: growi
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: default
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: growi-upload-data
+  namespace: growi
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: default
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: growi-elasticsearch-data
+  namespace: growi
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: default
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: growi-elasticsearch-plugin
+  namespace: growi
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: default
+  resources:
+    requests:
+      storage: 1Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -41,6 +93,8 @@ spec:
               value: mongodb://localhost:27017/growi
             - name: REDIS_URI
               value: redis://localhost:6379/growi
+            - name: ELASTICSEARCH_URI
+              value: http://localhost:9200/growi
             - name: PASSWORD_SEED
               valueFrom:
                 secretKeyRef:
@@ -58,6 +112,9 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+          volumeMounts:
+            - name: growi-upload-data
+              mountPath: /data
         - name: mongodb
           image: mongo:3.6.7
           ports:
@@ -71,6 +128,8 @@ spec:
               cpu: 500m
               memory: 512Mi
           volumeMounts:
+            - name: mongodb-configdb
+              mountPath: /data/configdb
             - name: mongodb-data
               mountPath: /data/db
         - name: redis
@@ -85,10 +144,46 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+        - name: elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch:5.6.12
+          ports:
+            - protocol: TCP
+              containerPort: 9200
+          env:
+            - name: ES_JAVA_OPTS
+              value: -Xms256m -Xmx256m
+          command:
+            - sh
+            - -c
+            - "./bin/elasticsearch-plugin list | grep -q analysis-kuromoji || ./bin/elasticsearch-plugin install analysis-kuromoji; ./bin/elasticsearch-plugin list | grep -q analysis-icu || ./bin/elasticsearch-plugin install analysis-icu; /usr/share/elasticsearch/bin/es-docker"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: elasticsearch-data
+              mountPath: /usr/share/elasticsearch/data
+            - name: elasticsearch-plugin
+              mountPath: /usr/share/elasticsearch/plugins
       volumes:
+        - name: mongodb-configdb
+          persistentVolumeClaim:
+            claimName: growi-mongodb-configdb
         - name: mongodb-data
           persistentVolumeClaim:
             claimName: growi-mongodb-data
+        - name: growi-upload-data
+          persistentVolumeClaim:
+            claimName: growi-upload-data
+        - name: elasticsearch-data
+          persistentVolumeClaim:
+            claimName: growi-elasticsearch-data
+        - name: elasticsearch-plugin
+          persistentVolumeClaim:
+            claimName: growi-elasticsearch-plugin
 ---
 apiVersion: v1
 kind: Service
