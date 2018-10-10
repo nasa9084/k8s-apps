@@ -10,7 +10,7 @@ spec:
   storageClassName: default
   resources:
     requests:
-      storage: 20Gi
+      storage: 10Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -51,7 +51,13 @@ spec:
           ports:
             - protocol: TCP
               containerPort: 9090
-          args: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus-data", "--storage.tsdb.no-lockfile", "--web.enable-admin-api"]
+          args:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --storage.tsdb.path=/prometheus-data
+            - --storage.tsdb.no-lockfile
+            - --storage.tsdb.retention=7d
+            - --web.enable-admin-api
+            - --alertmanager.timeout=30s
           securityContext:
             runAsUser: 0
           volumeMounts:
@@ -67,12 +73,39 @@ spec:
             httpGet:
               port: 9090
               path: /-/ready
+      volumes:
+        - name: prometheus-config
+          configMap:
+            name: prometheus
+        - name: prometheus-persistent-storage
+          persistentVolumeClaim:
+            claimName: prometheus-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: prom-system
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+    spec:
+      containers:
         - name: alertmanager
           image: prom/alertmanager:v0.15.2
           ports:
             - protocol: TCP
               containerPort: 9093
-          args: ["--config.file=/etc/alertmanager/alertmanager.yml", "--storage.path=/alertmanager-data"]
+          args:
+            - --config.file=/etc/alertmanager/alertmanager.yml
+            - --storage.path=/alertmanager-data
           volumeMounts:
             - name: alertmanager-config
               mountPath: /etc/alertmanager
@@ -84,18 +117,6 @@ spec:
             httpGet:
               port: 9093
               path: /-/ready
-        - name: grafana
-          image: grafana/grafana:5.2.2
-          env:
-            - name: GF_AUTH_BASIC_ENABLED
-              value: 'true'
-            - name: GF_AUTH_ANONYMOUS_ENABLED
-              value: 'false'
-          securityContext:
-            runAsUser: 0
-          volumeMounts:
-            - name: grafana-persistent-storage
-              mountPath: /var/lib/grafana
       initContainers:
         - name: init-alertmanager-config
           image: nasa9084/confd:v0.16.0
@@ -115,12 +136,6 @@ spec:
                   name: alertmanager-slack-url
                   key: alertmanager_slack_url
       volumes:
-        - name: prometheus-config
-          configMap:
-            name: prometheus
-        - name: prometheus-persistent-storage
-          persistentVolumeClaim:
-            claimName: prometheus-pvc
         - name: alertmanager-config-template
           configMap:
             name: alertmanager-config-template
@@ -129,6 +144,37 @@ spec:
             name: alertmanager-confd-toml
         - name: alertmanager-config
           emptyDir: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: prom-system
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana:5.2.2
+          env:
+            - name: GF_AUTH_BASIC_ENABLED
+              value: 'true'
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: 'false'
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: grafana-persistent-storage
+              mountPath: /var/lib/grafana
+      volumes:
         - name: grafana-persistent-storage
           persistentVolumeClaim:
             claimName: grafana-pvc
@@ -143,11 +189,32 @@ spec:
     - name: prometheus
       port: 9090
       targetPort: 9090
-    - name: grafana
-      port: 3000
-      targetPort: 3000
   selector:
     app: prometheus
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+  namespace: prom-system
+spec:
+  ports:
+    - port: 9093
+      targetPort: 9093
+  selector:
+    app: alertmanager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: prom-system
+spec:
+  ports:
+    - port: 3000
+      targetPort: 3000
+  selector:
+    app: grafana
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -166,5 +233,5 @@ spec:
         paths:
           - path: /
             backend:
-              serviceName: prometheus
+              serviceName: grafana
               servicePort: 3000

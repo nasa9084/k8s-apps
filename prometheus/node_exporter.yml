@@ -25,3 +25,12 @@ spec:
           ports:
             - protocol: TCP
               containerPort: 9100
+          args:
+            - --no-collector.wifi
+            - --no-collector.xfs
+            - --no-collector.textfile
+            - --no-collector.nfs
+            - --no-collector.nfsd
+            - --no-collector.timex
+            - --no-collector.vmstat
+            - --no-collector.sockstat

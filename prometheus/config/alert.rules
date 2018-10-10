@@ -28,6 +28,7 @@ groups:
         annotations:
           summery: 'Inside temperature of IX2105 is too high.'
           description: 'Inside temperature of IX2105 is too high (current: {{ $value }}).'
+
   - name: minio
     rules:
       - alert: MinioDown
@@ -46,6 +47,7 @@ groups:
         annotations:
           summary: 'Over 60GB'
           description: 'Over 60GB'
+
   - name: KubernetesNodes
     rules:
       - alert: NodeDown
@@ -90,3 +92,22 @@ groups:
         annotations:
           summary: 'Volume usage of {{ $labels.volume }} is too high.'
           description: 'Volume usage of {{ $labels.volume }} is too high (current: {{ $value }}'
+
+  - name: blackbox-probe
+    rules:
+      - alert: BlogIsDown
+        expr: probe_success{instance='https://blog.web-apps.tech'} != 1
+        for: 5m
+        labels:
+          target: 'blog.web-apps.tech'
+        annotations:
+          summary: 'blog.web-apps.tech is down'
+          description: 'blog.web-apps.tech is down'
+      - alert: RedmineIsDown
+        expr: probe_success{instance='https://rm.charakoba.com'} != 1
+        for: 5m
+        labels:
+          target: 'rm.charakoba.com'
+        annotations:
+          summary: 'rm.charakoba.com is down'
+          description: 'rm.charakoba.com is down'
