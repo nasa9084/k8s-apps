@@ -6,6 +6,7 @@ resources:
   - snmp_exporter.yml
   - cadvisor.yml
   - prometheus.yml
+  - kube_state_metrics.yml
 configMapGenerator:
   - name: prometheus
     files:
