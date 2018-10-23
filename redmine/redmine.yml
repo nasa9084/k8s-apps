@@ -99,6 +99,8 @@ spec:
           resources:
             requests:
               memory: 2Gi
+            limits:
+              memory: 2Gi
       volumes:
         - name: redmine-files-volume
           persistentVolumeClaim:
