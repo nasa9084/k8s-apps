@@ -92,6 +92,8 @@ spec:
                   key: password
             - name: REDMINE_PLUGINS_MIGRATE
               value: 'true'
+            - name: PASSENGER_MAX_POOL_SIZE
+              value: '10'
           readinessProbe:
             httpGet:
               port: 3000
