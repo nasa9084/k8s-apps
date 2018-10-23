@@ -50,7 +50,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: sync
-              image: nasa9084/sync-charakoba-cert:18.08.24
+              image: nasa9084/sync-charakoba-cert:18.10.23
               imagePullPolicy: Always
               env:
                 - name: MINIO_ACCESS_KEY

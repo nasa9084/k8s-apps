@@ -15,7 +15,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: backuper
-              image: nasa9084/backup_redmine:18.09.02
+              image: nasa9084/backup_redmine:18.10.23
               imagePullPolicy: Always
               volumeMounts:
                 - name: files
