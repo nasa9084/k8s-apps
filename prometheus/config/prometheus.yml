@@ -73,7 +73,7 @@ scrape_configs:
   - job_name: minio
     static_configs:
       - targets:
-          - 192.168.1.54:9000
+          - 192.168.1.56:9000
     metrics_path: /minio/prometheus/metrics
 
   - job_name: blackbox
