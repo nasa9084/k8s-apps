@@ -41,12 +41,12 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: redmine-postgresql-pvc
+  name: redmine-postgres-pvc
   namespace: redmine
 spec:
   accessModes:
-    - ReadWriteMany
-  storageClassName: default
+    - ReadWriteOnce
+  storageClassName: ceph-rbd
   resources:
     requests:
       storage: 3Gi
@@ -115,7 +115,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redmine-postgresql
+  name: redmine-postgres
   namespace: redmine
 spec:
   selector:
@@ -123,6 +123,8 @@ spec:
       app: redmine-postgres
   replicas: 1
   revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -135,7 +137,7 @@ spec:
             - containerPort: 5432
           volumeMounts:
             - name: pg-volume
-              mountPath: /var/lib/postgresql/data/pgdata
+              mountPath: /var/lib/postgresql/data
           env:
             - name: POSTGRES_USER
               value: redmine
@@ -152,7 +154,7 @@ spec:
       volumes:
         - name: pg-volume
           persistentVolumeClaim:
-            claimName: redmine-postgresql-pvc
+            claimName: redmine-postgres-pvc
 ---
 apiVersion: v1
 kind: Service
