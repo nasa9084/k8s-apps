@@ -6,8 +6,8 @@ metadata:
   namespace: ghost
 spec:
   accessModes:
-    - ReadWriteMany
-  storageClassName: default
+    - ReadWriteOnce
+  storageClassName: ceph-rbd
   resources:
     requests:
       storage: 5Gi
@@ -23,6 +23,8 @@ spec:
       app: ghost
   replicas: 1
   revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
@@ -40,6 +42,7 @@ spec:
               subPath: config.production.json
             - name: ghost-persistent-storage
               mountPath: /var/lib/ghost/content
+              subPath: content
       volumes:
         - name: ghost-config
           configMap:
