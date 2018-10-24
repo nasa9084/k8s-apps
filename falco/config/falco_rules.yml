@@ -981,24 +981,24 @@
               or fd.name startswith /root/jvm
               or fd.name startswith /root/.node-gyp)
 
-- rule: Write below root
-  desc: an attempt to write to any file directly below / or /root
-  condition: >
-    root_dir and evt.dir = < and open_write
-    and not fd.name in (known_root_files)
-    and not fd.directory in (known_root_directories)
-    and not exe_running_docker_save
-    and not gugent_writing_guestagent_log
-    and not dse_writing_tmp
-    and not zap_writing_state
-    and not airflow_writing_state
-    and not rpm_writing_root_rpmdb
-    and not maven_writing_groovy
-    and not chef_writing_conf
-    and not known_root_conditions
-  output: "File below / or /root opened for writing (user=%user.name command=%proc.cmdline parent=%proc.pname file=%fd.name program=%proc.name)"
-  priority: ERROR
-  tags: [filesystem]
+# - rule: Write below root
+#   desc: an attempt to write to any file directly below / or /root
+#   condition: >
+#     root_dir and evt.dir = < and open_write
+#     and not fd.name in (known_root_files)
+#     and not fd.directory in (known_root_directories)
+#     and not exe_running_docker_save
+#     and not gugent_writing_guestagent_log
+#     and not dse_writing_tmp
+#     and not zap_writing_state
+#     and not airflow_writing_state
+#     and not rpm_writing_root_rpmdb
+#     and not maven_writing_groovy
+#     and not chef_writing_conf
+#     and not known_root_conditions
+#   output: "File below / or /root opened for writing (user=%user.name command=%proc.cmdline parent=%proc.pname file=%fd.name program=%proc.name)"
+#   priority: ERROR
+#   tags: [filesystem]
 
 - macro: cmp_cp_by_passwd
   condition: proc.name in (cmp, cp) and proc.pname in (passwd, run-parts)
@@ -1065,26 +1065,26 @@
   tags: [filesystem]
 
 # Only let rpm-related programs write to the rpm database
-- rule: Write below rpm database
-  desc: an attempt to write to the rpm database by any non-rpm related program
-  condition: fd.name startswith /var/lib/rpm and open_write and not rpm_procs and not ansible_running_python and not python_running_chef
-  output: "Rpm database opened for writing by a non-rpm program (command=%proc.cmdline file=%fd.name parent=%proc.pname pcmdline=%proc.pcmdline)"
-  priority: ERROR
-  tags: [filesystem, software_mgmt]
-
-- macro: postgres_running_wal_e
-  condition: (proc.pname=postgres and proc.cmdline startswith "sh -c envdir /etc/wal-e.d/env /usr/local/bin/wal-e")
-
-- macro: redis_running_prepost_scripts
-  condition: (proc.aname[2]=redis-server and (proc.cmdline contains "redis-server.post-up.d" or proc.cmdline contains "redis-server.pre-up.d"))
-
-- macro: rabbitmq_running_scripts
-  condition: >
-    (proc.pname=beam.smp and
-    (proc.cmdline startswith "sh -c exec ps" or
-     proc.cmdline startswith "sh -c exec inet_gethost" or
-     proc.cmdline= "sh -s unix:cmd" or
-     proc.cmdline= "sh -c exec /bin/sh -s unix:cmd 2>&1"))
+# - rule: Write below rpm database
+#   desc: an attempt to write to the rpm database by any non-rpm related program
+#   condition: fd.name startswith /var/lib/rpm and open_write and not rpm_procs and not ansible_running_python and not python_running_chef
+#   output: "Rpm database opened for writing by a non-rpm program (command=%proc.cmdline file=%fd.name parent=%proc.pname pcmdline=%proc.pcmdline)"
+#   priority: ERROR
+#   tags: [filesystem, software_mgmt]
+#
+# - macro: postgres_running_wal_e
+#   condition: (proc.pname=postgres and proc.cmdline startswith "sh -c envdir /etc/wal-e.d/env /usr/local/bin/wal-e")
+#
+# - macro: redis_running_prepost_scripts
+#   condition: (proc.aname[2]=redis-server and (proc.cmdline contains "redis-server.post-up.d" or proc.cmdline contains "redis-server.pre-up.d"))
+#
+# - macro: rabbitmq_running_scripts
+#   condition: >
+#     (proc.pname=beam.smp and
+#     (proc.cmdline startswith "sh -c exec ps" or
+#      proc.cmdline startswith "sh -c exec inet_gethost" or
+#      proc.cmdline= "sh -s unix:cmd" or
+#      proc.cmdline= "sh -c exec /bin/sh -s unix:cmd 2>&1"))
 
 - macro: rabbitmqctl_running_scripts
   condition: (proc.aname[2]=rabbitmqctl and proc.cmdline startswith "sh -c ")
