@@ -9,6 +9,7 @@ receivers:
     slack_configs:
       - channel: "#emergency"
         username: Alertmanager
+        send_resolved: true
         fields:
           - title: target
             value: {{"'{{.CommonLabels.target }}'"}}
