@@ -36,6 +36,8 @@ spec:
       app: prometheus
   replicas: 1
   revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
