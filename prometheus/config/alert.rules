@@ -84,25 +84,6 @@ groups:
           summary: 'CPU usage of {{ $labels.nodename }} is too high.'
           description: 'CPU usage of {{ $labels.nodename }} is too high (current: {{ $value }}).'
 
-  - name: GlusterFS
-    rules:
-      - alert: GlusterDown
-        expr: up{job='gluster'} != 1
-        for: 5m
-        labels:
-          target: 'gluster'
-        annotations:
-          summary: 'GlusterFS Server is down'
-          description: 'GlusterFS Server is down'
-      - alert: VolumeUsageTooHigh
-        expr: (sum(gluster_node_size_total_bytes) by (volume) - sum(gluster_node_size_free_bytes) by (volume)) / sum(gluster_node_size_total_bytes) by (volume) * 100 > 85
-        for: 5m
-        labels:
-          target: '{{ $labels.volume }}'
-        annotations:
-          summary: 'Volume usage of {{ $labels.volume }} is too high.'
-          description: 'Volume usage of {{ $labels.volume }} is too high (current: {{ $value }}'
-
   - name: blackbox-probe
     rules:
       - alert: BlogIsDown
