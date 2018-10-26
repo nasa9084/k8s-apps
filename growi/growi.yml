@@ -2,38 +2,25 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: growi-mongodb-data
+  name: growi-mongodb-pvc
   namespace: growi
 spec:
   accessModes:
-    - ReadWriteMany
-  storageClassName: default
+    - ReadWriteOnce
+  storageClassName: ceph-rbd
   resources:
     requests:
-      storage: 3Gi
+      storage: 4Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: growi-mongodb-configdb
+  name: growi-pvc
   namespace: growi
 spec:
   accessModes:
-    - ReadWriteMany
-  storageClassName: default
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: growi-upload-data
-  namespace: growi
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: default
+    - ReadWriteOnce
+  storageClassName: ceph-rbd
   resources:
     requests:
       storage: 5Gi
@@ -41,28 +28,15 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: growi-elasticsearch-data
+  name: growi-elasticsearch-pvc
   namespace: growi
 spec:
   accessModes:
-    - ReadWriteMany
-  storageClassName: default
+    - ReadWriteOnce
+  storageClassName: ceph-rbd
   resources:
     requests:
-      storage: 1Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: growi-elasticsearch-plugin
-  namespace: growi
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: default
-  resources:
-    requests:
-      storage: 1Gi
+      storage: 2Gi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -90,11 +64,11 @@ spec:
               containerPort: 3000
           env:
             - name: MONGO_URI
-              value: mongodb://localhost:27017/growi
+              value: mongodb://growi-mongodb:27017/growi
             - name: REDIS_URI
-              value: redis://localhost:6379/growi
+              value: redis://growi-redis:6379/growi
             - name: ELASTICSEARCH_URI
-              value: http://localhost:9200/growi
+              value: http://growi-elasticsearch:9200/growi
             - name: PASSWORD_SEED
               valueFrom:
                 secretKeyRef:
@@ -113,8 +87,33 @@ spec:
               cpu: 500m
               memory: 512Mi
           volumeMounts:
-            - name: growi-upload-data
+            - name: growi-volume
+              subPath: data
               mountPath: /data
+      volumes:
+        - name: growi-volume
+          persistentVolumeClaim:
+            claimName: growi-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: growi-mongodb
+  namespace: growi
+spec:
+  selector:
+    matchLabels:
+      app: growi-mongodb
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: growi-mongodb
+    spec:
+      containers:
         - name: mongodb
           image: mongo:3.6.7
           ports:
@@ -128,15 +127,41 @@ spec:
               cpu: 500m
               memory: 512Mi
           volumeMounts:
-            - name: mongodb-configdb
+            - name: mongodb-volume
+              subPath: configdb
               mountPath: /data/configdb
-            - name: mongodb-data
+            - name: mongodb-volume
+              subPath: db
               mountPath: /data/db
+      volumes:
+        - name: mongodb-volume
+          persistentVolumeClaim:
+            claimName: growi-mongodb-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: growi-redis
+  namespace: growi
+spec:
+  replicas: 1
+  revisionHistoryLimit: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: growi-redis
+  template:
+    metadata:
+      labels:
+        app: growi-redis
+    spec:
+      containers:
         - name: redis
           image: redis:4.0.11
           ports:
             - protocol: TCP
-              containerPort: 6279
+              containerPort: 6379
           resources:
             requests:
               cpu: 250m
@@ -144,6 +169,32 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: growi-elasticsearch
+  namespace: growi
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: growi-elasticsearch
+  template:
+    metadata:
+      labels:
+        app: growi-elasticsearch
+    spec:
+      initContainers:
+        - name: init-sysctl
+          image: busybox:1.29.3
+          command: ["sysctl", "-w", "vm.max_map_count=262144"]
+          securityContext:
+            privileged: true
+      containers:
         - name: elasticsearch
           image: docker.elastic.co/elasticsearch/elasticsearch:5.6.12
           ports:
@@ -164,26 +215,16 @@ spec:
               cpu: 500m
               memory: 512Mi
           volumeMounts:
-            - name: elasticsearch-data
+            - name: elasticsearch-volume
+              subPath: data
               mountPath: /usr/share/elasticsearch/data
-            - name: elasticsearch-plugin
+            - name: elasticsearch-volume
+              subPath: plugins
               mountPath: /usr/share/elasticsearch/plugins
       volumes:
-        - name: mongodb-configdb
+        - name: elasticsearch-volume
           persistentVolumeClaim:
-            claimName: growi-mongodb-configdb
-        - name: mongodb-data
-          persistentVolumeClaim:
-            claimName: growi-mongodb-data
-        - name: growi-upload-data
-          persistentVolumeClaim:
-            claimName: growi-upload-data
-        - name: elasticsearch-data
-          persistentVolumeClaim:
-            claimName: growi-elasticsearch-data
-        - name: elasticsearch-plugin
-          persistentVolumeClaim:
-            claimName: growi-elasticsearch-plugin
+            claimName: growi-elasticsearch-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -196,6 +237,42 @@ spec:
   ports:
     - port: 3000
       targetPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: growi-mongodb
+  namespace: growi
+spec:
+  selector:
+    app: growi-mongodb
+  ports:
+    - port: 27017
+      targetPort: 27017
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: growi-redis
+  namespace: growi
+spec:
+  selector:
+    app: growi-redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: growi-elasticsearch
+  namespace: growi
+spec:
+  selector:
+    app: growi-elasticsearch
+  ports:
+    - port: 9200
+      targetPort: 9200
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
