@@ -3,4 +3,3 @@ namespace: redmine
 resources:
   - redmine.yml
   - cert.yml
-  - backup.yml
