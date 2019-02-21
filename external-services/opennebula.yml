@@ -27,7 +27,7 @@ spec:
           - path: /
             backend:
               serviceName: opennebula
-              servicePort: 80
+              servicePort: 9869
 ---
 apiVersion: certmanager.k8s.io/v1alpha1
 kind: Certificate
