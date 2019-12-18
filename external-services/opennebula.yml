@@ -18,10 +18,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - web-apps.tech
-      secretName: web-apps.tech
+        - one.web-apps.tech
+      secretName: one.web-apps.tech-ingress-cert
   rules:
-    - host: web-apps.tech
+    - host: one.web-apps.tech
       http:
         paths:
           - path: /
