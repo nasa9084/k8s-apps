@@ -8,13 +8,13 @@ spec:
   type: ExternalName
   externalName: 192.168.1.33
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: opennebula
   namespace: external-services
   annotations:
-    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: web-apps.tech
 spec:
   tls:
     - hosts:
@@ -28,21 +28,3 @@ spec:
             backend:
               serviceName: opennebula
               servicePort: 9869
----
-apiVersion: certmanager.k8s.io/v1alpha1
-kind: Certificate
-metadata:
-  name: web-apps.tech
-spec:
-  secretName: web-apps.tech
-  dnsNames:
-    - web-apps.tech
-  acme:
-    config:
-      - domains:
-          - web-apps.tech
-        dns01:
-          provider: cloudflare
-  issuerRef:
-    name: web-apps.tech
-    kind: ClusterIssuer
