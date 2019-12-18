@@ -2,5 +2,5 @@
 namespace: external-services
 resources:
   - metadata.yml
-  - minio.yml
+  #- minio.yml
   - opennebula.yml
