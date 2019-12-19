@@ -1,0 +1,6 @@
+[template]
+src = "config.production.json.tmpl"
+dest = "/var/lib/ghost/config.production.json"
+keys = [
+     "GHOST_MYSQL_PASSWORD",
+]

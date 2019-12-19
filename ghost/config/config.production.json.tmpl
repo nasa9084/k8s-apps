@@ -5,9 +5,13 @@
     "host": "0.0.0.0"
   },
   "database": {
-    "client": "sqlite3",
+    "client": "mysql",
     "connection": {
-      "filename": "/var/lib/ghost/content/data/ghost.db"
+      "host": "192.168.1.44",
+      "port": 3306,
+      "user": "ghost",
+      "password": "{{getenv "GHOST_MYSQL_PASSWORD"}}",
+      "database": "ghost"
     }
   },
   "mail": {

@@ -4,6 +4,9 @@ resources:
   - metadata.yml
   - ghost.yml
 configMapGenerator:
-  - name: ghost
+  - name: ghost-confd-config
     files:
-      - config/config.production.json
+      - config/confd.toml
+  - name: ghost-config-template
+    files:
+      - config/config.production.json.tmpl

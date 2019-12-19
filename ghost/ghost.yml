@@ -7,7 +7,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: ceph-rbd
+  storageClassName: ceph
   resources:
     requests:
       storage: 5Gi
@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: ghost
-          image: ghost:2.1.2
+          image: ghost:3.2.0
           ports:
             - protocol: TCP
               containerPort: 2368
@@ -43,10 +43,32 @@ spec:
             - name: ghost-persistent-storage
               mountPath: /var/lib/ghost/content
               subPath: content
+      initContainers:
+        - name: init-ghost-config
+          image: nasa9084/confd:v0.16.0
+          args: [ "-onetime", "-backend", "env" ]
+          volumeMounts:
+            - name: ghost-config-template
+              mountPath: /etc/confd/templates
+            - name: ghost-confd-config
+              mountPath: /etc/confd/conf.d
+            - name: ghost-config
+              mountPath: /var/lib/ghost
+          env:
+            - name: GHOST_MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ghost
+                  key: mysql-password
       volumes:
-        - name: ghost-config
+        - name: ghost-config-template
           configMap:
-            name: ghost
+            name: ghost-config-template
+        - name: ghost-confd-config
+          configMap:
+            name: ghost-confd-config
+        - name: ghost-config
+          emptyDir: {}
         - name: ghost-persistent-storage
           persistentVolumeClaim:
             claimName: ghost-pvc
@@ -69,12 +91,13 @@ metadata:
   name: ghost
   namespace: ghost
   annotations:
-    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: web-apps.tech
     nginx.ingress.kubernetes.io/proxy-body-size: 5m
 spec:
   tls:
     - hosts:
         - blog.web-apps.tech
+      secretName: blog.web-apps.tech-ingress-cert
   rules:
     - host: blog.web-apps.tech
       http:
