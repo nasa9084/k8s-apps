@@ -5,3 +5,5 @@ resources:
   #- minio.yml
   - opennebula.yml
   - grafana.yml
+  - prometheus.yml
+  - alertmanager.yml
