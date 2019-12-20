@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: external-services
+spec:
+  type: ExternalName
+  externalName: 192.168.1.45
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: external-services
+  annotations:
+    cert-manager.io/cluster-issuer: web-apps.tech
+spec:
+  tls:
+    - hosts:
+        - grafana.web-apps.tech
+      secretName: grafana.web-apps.tech-ingress-cert
+  rules:
+    - host: grafana.web-apps.tech
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: grafana
+              servicePort: 3000

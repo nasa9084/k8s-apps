@@ -4,3 +4,4 @@ resources:
   - metadata.yml
   #- minio.yml
   - opennebula.yml
+  - grafana.yml
