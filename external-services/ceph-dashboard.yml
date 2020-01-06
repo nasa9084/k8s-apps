@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ceph-dashboard
+  namespace: external-services
+spec:
+  type: ExternalName
+  externalName: 192.168.1.33
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ceph-dashboard
+  namespace: external-services
+  annotations:
+    cert-manager.io/cluster-issuer: web-apps.tech
+spec:
+  tls:
+    - hosts:
+        - ceph.web-apps.tech
+      secretName: ceph.web-apps.tech-ingress-cert
+  rules:
+    - host: ceph.web-apps.tech
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: ceph-dashboard
+              servicePort: 8080
