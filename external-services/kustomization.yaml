@@ -2,8 +2,8 @@
 namespace: external-services
 resources:
   - metadata.yml
-  #- minio.yml
   - opennebula.yml
   - grafana.yml
   - prometheus.yml
   - alertmanager.yml
+  - ceph-dashboard.yml
