@@ -21,16 +21,23 @@ spec:
     spec:
       containers:
         - name: node-exporter
-          image: prom/node-exporter:v0.16.0
+          image: prom/node-exporter:v0.18.1
           ports:
             - protocol: TCP
               containerPort: 9100
           args:
-            - --no-collector.wifi
-            - --no-collector.xfs
-            - --no-collector.textfile
-            - --no-collector.nfs
-            - --no-collector.nfsd
-            - --no-collector.timex
-            - --no-collector.vmstat
-            - --no-collector.sockstat
+            - --collector.systemd
+            - --path.rootfs=/host
+          volumeMounts:
+            - mountPath: /host
+              name: root
+              readOnly: true
+      hostPID: true
+      hostNetwork: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+      volumes:
+        - name: root
+          hostPath:
+            path: /
