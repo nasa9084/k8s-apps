@@ -28,3 +28,7 @@ spec:
             backend:
               serviceName: opennebula
               servicePort: 9869
+          - path: /websockify
+            backend:
+              serviceName: opennebula
+              servicePort: 29876
