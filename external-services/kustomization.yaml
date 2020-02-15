@@ -7,3 +7,4 @@ resources:
   - prometheus.yml
   - alertmanager.yml
   - ceph-dashboard.yml
+  - pritunl.yml
