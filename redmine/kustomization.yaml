@@ -1,6 +1,0 @@
----
-namespace: redmine
-resources:
-  - metadata.yml
-  - redmine.yml
-  - cert.yml
