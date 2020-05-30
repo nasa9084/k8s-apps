@@ -1,0 +1,55 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: backup-blog-contents-
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      serviceAccountName: backup-blog-contents
+      restartPolicy: OnFailure
+      containers:
+        - name: backup
+          image: nasa9084/backup-blog-contents
+          imagePullPolicy: Always
+          env:
+            - name: GCLOUD_BUCKET_NAME
+              value: blog-web-apps-tech-backup
+          volumeMounts:
+            - name: gcloud-account-key
+              mountPath: "/var/run/secrets/cloud.google.com/serviceaccount"
+              readOnly: true
+      volumes:
+        - name: gcloud-account-key
+          secret:
+            secretName: gcloud-account-key
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backup-blog-contents
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: backup-blog-contents
+rules:
+  - apiGroups: [ "" ]
+    resources: [ "pods" ]
+    verbs: [ "get", "list" ]
+  - apiGroups: [ "" ]
+    resources: [ "pods/exec" ]
+    verbs: [ "create" ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: backup-blog-contents
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: backup-blog-contents
+subjects:
+  - kind: ServiceAccount
+    name: backup-blog-contents
